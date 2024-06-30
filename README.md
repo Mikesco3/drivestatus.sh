@@ -8,27 +8,28 @@ This script checks the health status of hard drives connected to your system usi
 
 - `smartmontools` package installed on your system.
 
-## Installation
-
-1. Install `smartmontools` if you haven't already. You can use your package manager to install it. For example, on Debian-based systems:
+Install `smartmontools` if you haven't already. You can use your package manager to install it. For example, on Debian-based systems:
 
   ```sh
    sudo apt-get update
    sudo apt-get install smartmontools
   ```
+
+## Installation
+
 ## short method
 Run the following with root privileges command to download the script
 ``` sh
 sudo wget -O /usr/bin/drivestatus https://raw.githubusercontent.com/Mikesco3/drivestatus.sh/main/drivestatus.sh && sudo chmod +x /usr/bin/drivestatus
 ```
 ## longer method
-2. Clone this repository:
+1. Clone this repository:
   ``` sh
    git clone git@github.com:Mikesco3/drivestatus.sh.git
    cd drivestatus
   ```
 
-3. Make the script executable:
+2. Make the script executable:
   ``` sh
    chmod +x drivestatus.sh
   ```
