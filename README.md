@@ -62,5 +62,5 @@ sdd  : UNKNOWN STATUS
 <a href="https://github.com/Mikesco3/drivestatus.sh/blob/main/LICENSE" target="_blank">AGPL-3.0 license</a>.
 
 # Acknowledgments
-- <a href="https://www.youtube.com/@itssimplycomputing1814" target="_blank">@@itssimplycomputing1814 on Youtube</a>
+- <a href="https://www.youtube.com/@itssimplycomputing1814" target="_blank">@itssimplycomputing1814 on Youtube</a>
 - smartmontools - For providing the smartctl utility.
