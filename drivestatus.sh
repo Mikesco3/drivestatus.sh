@@ -8,8 +8,7 @@ if [[ $(id -u) -ne 0 ]]; then
     exit 1
 fi
 
-# Get the list of drives
-# skipping zfs, lvm, dvd and usb drives
+# Get the list of drives (skipping zfs, lvm, dvd and usb drives)
 drives=$(ls -la /dev/disk/by-id/ |grep -v sr | grep -v usb | grep -v part | grep -v lvm | grep -v dm | awk '{print "/dev/disk/by-id/" $11}' | grep by-id/.. | sort | uniq | sed 's/\/disk\/by-id\/..\/..//g')
 
 
