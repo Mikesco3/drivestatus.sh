@@ -8,9 +8,11 @@ if [[ $(id -u) -ne 0 ]]; then
     exit 1
 fi
 
-# Get the list of drives (skipping zfs, lvm, dvd and usb drives)
-drives=$(ls -la /dev/disk/by-id/ |grep -v sr | grep -v usb | grep -v part | grep -v lvm | grep -v dm | awk '{print "/dev/disk/by-id/" $11}' | grep by-id/.. | sort | uniq | sed 's/\/disk\/by-id\/..\/..//g')
+echo "-------------------------------------------"
+echo Drive Health:
 
+# Get the list of drives (skipping zfs, lvm, dvd and usb drives)
+drives=$( ls -la /dev/disk/by-id/ | grep -v usb | grep -v part | grep -v lvm | grep -v dm | grep -v sr | awk '{print "/dev/disk/by-id/" $11}' | grep by-id/.. | sort | uniq | sed 's/\/disk\/by-id\/..\/..//g' )
 
 for drive in $drives
 do
@@ -31,6 +33,10 @@ do
 
 done
 
-
+## List the Details on the Drives Present
+echo "-------------------------------------------"
+echo Drive Details:
+lsblk --nodeps -o NAME,MODEL,SERIAL,TYPE,SIZE,SUBSYSTEMS |grep -v zd | grep -v VirtualDisk
+echo "-------------------------------------------"
 ## Get Drives Previous method
 # drives=$(lsblk | grep disk | grep -v zd | awk '{print "/dev/" $1}')
