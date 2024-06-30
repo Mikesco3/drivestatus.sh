@@ -4,7 +4,7 @@
 This script checks the health status of hard drives connected to your system using the `smartctl` utility from the `smartmontools` package.
 
 ## Requirements
-- `smartmontools` package installed on your system for the`smartctl` command.
+- `smartmontools` package installed on your system for the `smartctl` command.
 - `util-linux` package installed on your system for the `lsblk` command.
 
 Consult your package manager to install these on your system. For example, on Debian-based systems:
