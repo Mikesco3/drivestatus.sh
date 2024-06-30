@@ -1,21 +1,26 @@
 #!/usr/bin/bash
-for i in {a..z}
-  do
-  smartctl -H /dev/sd$i > /tmp/asdasd
+
+## Inspired from:  https://www.youtube.com/watch?v=1YGt5o35mo0
+
+# Get the list of drives, ommiting zfs datasets
+drives=$(lsblk | grep disk | grep -v zd | awk '{print "/dev/" $1}')
+
+for drive in $drives
+do
+  smartctl -H $drive > /tmp/asdasd
   if grep -q "No such device" /tmp/asdasd; then
     rm -f /tmp/asdasd
   else
     rm -f /tmp/asdasd
-    smartctl -H /dev/sd$i > /tmp/assessmentstatus
+    smartctl -H $drive > /tmp/assessmentstatus
     if grep -q -i -e passed -e "SMART Health Status: OK" /tmp/assessmentstatus; then
-      echo "sd$i  : GOOD"
+      echo "$drive  : GOOD"
     elif grep -q -i failed /tmp/assessmentstatus; then
-      echo "sd$i  : $(tput setaf 1)REPLACE$(tput sgr 0)"
+      echo "$drive  : $(tput setaf 1)REPLACE$(tput sgr 0)"
     else
-      echo "sd$i  : UNKOWN STATUS"
+      echo "$drive  : UNKNOWN STATUS"
     fi
     rm -f /tmp/assessmentstatus
   fi
 done
 
-## source https://www.youtube.com/watch?v=1YGt5o35mo0
