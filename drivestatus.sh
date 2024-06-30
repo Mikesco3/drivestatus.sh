@@ -3,7 +3,9 @@
 ## Inspired from:  https://www.youtube.com/watch?v=1YGt5o35mo0
 
 # Get the list of drives
-drives=$(lsblk | grep disk | grep -v zd | awk '{print "/dev/" $1}')
+# drives=$(lsblk | grep disk | grep -v zd | awk '{print "/dev/" $1}')
+drives=$(ls -la /dev/disk/by-id/ | grep -v usb | grep -v part | grep -v lvm | grep -v dm | awk '{print "/dev/disk/by-id/" $11}' | grep by-id/.. | sort | uniq | sed 's/\/disk\/by-id\/..\/..//g')
+
 
 for drive in $drives
 do
@@ -24,3 +26,6 @@ do
 
 done
 
+
+## Get Drives Previous method
+# drives=$(lsblk | grep disk | grep -v zd | awk '{print "/dev/" $1}')
