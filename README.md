@@ -1,18 +1,16 @@
-# drivestatus.sh
+# drivestatus
 
 # Hard Drive Health Check Script
-
 This script checks the health status of hard drives connected to your system using the `smartctl` utility from the `smartmontools` package.
 
 ## Requirements
+- `smartmontools` package installed on your system for the`smartctl` command.
+- `util-linux` package installed on your system for the `lsblk` command.
 
-- `smartmontools` package installed on your system.
-
-Install `smartmontools` if you haven't already. You can use your package manager to install it. For example, on Debian-based systems:
-
+Consult your package manager to install these on your system. For example, on Debian-based systems:
   ```sh
-   sudo apt-get update
-   sudo apt-get install smartmontools
+   sudo apt-get update 
+   sudo apt-get install smartmontools util-linux
   ```
 
 ## Installation
@@ -43,7 +41,7 @@ Run the script using the following command:
   ``` sh
    drivestatus 
   ```
-The script will check the health status of all drives from `/dev/sda` to `/dev/sdz` and print their status.
+The script will check the health status of all drives and print their status and details.
 
 ## Script Details
 The script performs the following steps:
