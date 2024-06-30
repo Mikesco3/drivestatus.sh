@@ -41,7 +41,7 @@ sudo wget -O /usr/bin/drivestatus https://raw.githubusercontent.com/Mikesco3/dri
 # Usage
 Run the script using the following command:
   ``` sh
-   drivestatus.sh 
+   drivestatus 
   ```
 The script will check the health status of all drives from `/dev/sda` to `/dev/sdz` and print their status.
 
