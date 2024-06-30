@@ -12,7 +12,7 @@ echo "-------------------------------------------"
 echo Drive Health:
 
 # Get the list of drives (skipping zfs, lvm, dvd and usb drives)
-drives=$( ls -la /dev/disk/by-id/  | grep -v part | grep -v lvm | grep -v dm | grep -v sr | awk '{print "/dev/disk/by-id/" $11}' | grep by-id/.. | sort | uniq | sed 's/\/disk\/by-id\/..\/..//g' )
+drives=$(lsblk -o NAME,SIZE,MODEL,TYPE| grep disk | grep -v zd |grep -v VirtualDisk | awk '{print "/dev/" $1}' )
 
 for drive in $drives
 do
@@ -40,3 +40,8 @@ lsblk --nodeps -o NAME,MODEL,SERIAL,TYPE,SIZE,SUBSYSTEMS |grep -v zd | grep -v V
 echo "-------------------------------------------"
 ## Get Drives Previous method
 # drives=$(lsblk | grep disk | grep -v zd | awk '{print "/dev/" $1}')
+
+### This is another method but it is causing a bug on usb enclosures that don't have the drives present
+# Get the list of drives (skipping zfs, lvm, dvd and usb drives)
+# drives=$( ls -la /dev/disk/by-id/  | grep -v part | grep -v lvm | grep -v dm | grep -v sr | awk '{print "/dev/disk/by-id/" $11}' | grep by-id/.. | sort | uniq | sed 's/\/disk\/by-id\/..\/..//g' )
+
