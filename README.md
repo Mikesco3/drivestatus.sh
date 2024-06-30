@@ -58,10 +58,18 @@ The script performs the following steps:
 
 ## Example Output
 ```
-sda  : GOOD
-sdb  : GOOD
-sdc  : REPLACE
-sdd  : UNKNOWN STATUS
+-------------------------------------------
+Drive Health:
+/dev/sda  : GOOD
+/dev/sdb  : GOOD
+/dev/nvme0n1  : GOOD
+-------------------------------------------
+Drive Details:
+NAME    MODEL     SERIAL           TYPE    SIZE   SUBSYSTEMS
+sda     ACME      000000000001     disk   10.9T   block:scsi:usb:pci
+sdb     HGST      5999AA           disk   10.9T   block:scsi:usb:pci
+nvme0n1 Samsung   AABBCC00112233   disk    1.8T   block:nvme:pci
+-------------------------------------------
 ```
 
 ## License
