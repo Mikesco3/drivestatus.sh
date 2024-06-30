@@ -25,7 +25,7 @@ sudo wget -O /usr/bin/drivestatus https://raw.githubusercontent.com/Mikesco3/dri
 ## longer method
 1. Clone this repository:
   ``` sh
-   git clone git@github.com:Mikesco3/drivestatus.sh.git
+   git clone https://github.com/Mikesco3/drivestatus.sh.git
    cd drivestatus
   ```
 
