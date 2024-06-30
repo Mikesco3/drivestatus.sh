@@ -16,7 +16,12 @@ This script checks the health status of hard drives connected to your system usi
    sudo apt-get update
    sudo apt-get install smartmontools
   ```
-
+## short method
+Run the following with root privileges command to download the script
+``` sh
+sudo wget -O /usr/bin/drivestatus https://raw.githubusercontent.com/Mikesco3/drivestatus.sh/main/drivestatus.sh && sudo chmod +x /usr/bin/drivestatus
+```
+## longer method
 2. Clone this repository:
   ``` sh
    git clone git@github.com:Mikesco3/drivestatus.sh.git
@@ -29,7 +34,7 @@ This script checks the health status of hard drives connected to your system usi
   ```
 4. (Optional) Copy it to the system path
   ``` sh
-   cp drivestatus.sh /usr/bin/
+   cp drivestatus.sh /usr/bin/drivestatus
   ```
 
 # Usage
