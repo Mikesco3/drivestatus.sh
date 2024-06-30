@@ -7,7 +7,7 @@ for i in {a..z}
   else
     rm -f /tmp/asdasd
     smartctl -H /dev/sd$i > /tmp/assessmentstatus
-    if grep -q -i passed /tmp/assessmentstatus; then
+    if grep -q -i -e passed -e "SMART Health Status: OK" /tmp/assessmentstatus; then
       echo "sd$i  : GOOD"
     elif grep -q -i failed /tmp/assessmentstatus; then
       echo "sd$i  : $(tput setaf 1)REPLACE$(tput sgr 0)"
