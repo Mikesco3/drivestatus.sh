@@ -12,7 +12,7 @@ echo "-------------------------------------------"
 echo Drive Health:
 
 # Get the list of drives (skipping zfs, lvm, dvd and usb drives)
-drives=$( ls -la /dev/disk/by-id/ | grep -v usb | grep -v part | grep -v lvm | grep -v dm | grep -v sr | awk '{print "/dev/disk/by-id/" $11}' | grep by-id/.. | sort | uniq | sed 's/\/disk\/by-id\/..\/..//g' )
+drives=$( ls -la /dev/disk/by-id/  | grep -v part | grep -v lvm | grep -v dm | grep -v sr | awk '{print "/dev/disk/by-id/" $11}' | grep by-id/.. | sort | uniq | sed 's/\/disk\/by-id\/..\/..//g' )
 
 for drive in $drives
 do
