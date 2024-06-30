@@ -2,9 +2,15 @@
 
 ## Inspired from:  https://www.youtube.com/watch?v=1YGt5o35mo0
 
+# Check if running with elevated privileges (root)
+if [[ $(id -u) -ne 0 ]]; then
+    echo "This script must be run with elevated privileges (root)." >&2
+    exit 1
+fi
+
 # Get the list of drives
 # drives=$(lsblk | grep disk | grep -v zd | awk '{print "/dev/" $1}')
-drives=$(ls -la /dev/disk/by-id/ | grep -v usb | grep -v part | grep -v lvm | grep -v dm | awk '{print "/dev/disk/by-id/" $11}' | grep by-id/.. | sort | uniq | sed 's/\/disk\/by-id\/..\/..//g')
+drives=$(ls -la /dev/disk/by-id/ |grep -v sr | grep -v usb | grep -v part | grep -v lvm | grep -v dm | awk '{print "/dev/disk/by-id/" $11}' | grep by-id/.. | sort | uniq | sed 's/\/disk\/by-id\/..\/..//g')
 
 
 for drive in $drives
