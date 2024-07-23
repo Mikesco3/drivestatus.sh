@@ -12,7 +12,7 @@ echo "-------------------------------------------"
 echo Drive Health:
 
 # Get the list of drives (skipping zfs, lvm, dvd and usb drives)
-drives=$(lsblk -o NAME,SIZE,MODEL,WWN,TYPE| grep disk | grep -v zd | grep -v lvm |grep -v VirtualDisk | awk '{print "/dev/" $1}' )
+drives=$(lsblk -o NAME,SIZE,MODEL,TYPE| grep disk | grep -v zd | grep -v lvm |grep -v VirtualDisk | awk '{print "/dev/" $1}' )
 
 for drive in $drives
 do
@@ -36,7 +36,7 @@ done
 ## List the Details on the Drives Present
 echo "-------------------------------------------"
 echo Drive Details:
-lsblk --nodeps -o NAME,MODEL,SERIAL,TYPE,SIZE,SUBSYSTEMS |grep -v zd | grep -v VirtualDisk
+lsblk --nodeps -o NAME,MODEL,SERIAL,WWN,TYPE,SIZE,SUBSYSTEMS |grep -v zd | grep -v VirtualDisk
 echo "-------------------------------------------"
 ## Get Drives Previous method
 # drives=$(lsblk | grep disk | grep -v zd | awk '{print "/dev/" $1}')
