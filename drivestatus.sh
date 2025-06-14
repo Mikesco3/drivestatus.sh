@@ -1,47 +1,88 @@
-#!/usr/bin/bash
-
+#!/usr/bin/env bash
 ## Inspired from:  https://www.youtube.com/watch?v=1YGt5o35mo0
+## 20250614 _ added age, wear level and port numbers
 
-# Check if running with elevated privileges (root)
+# Must run as root
 if [[ $(id -u) -ne 0 ]]; then
-    echo "This script must be run with elevated privileges (root)." >&2
+    echo "This script must be run as root." >&2
     exit 1
 fi
 
-echo "-------------------------------------------"
-echo Drive Health:
+printf -- "-------------------------------------------\n"
+printf "Drive Health:\n"
+printf "%-12s %-8s %-9s %-6s %-10s\n" "DEVICE" "STATUS" "AGE_DAYS" "WEAR" "PORT"
 
-# Get the list of drives (skipping zfs, lvm, dvd and usb drives)
-drives=$(lsblk -o NAME,SIZE,MODEL,TYPE| grep disk | grep -v zd | grep -v lvm |grep -v VirtualDisk | awk '{print "/dev/" $1}' )
+# Get all real disks, skip zfs/lvm/virtual
+drives=$(lsblk -ndo NAME,TYPE,MODEL | awk '$2=="disk" && $3 !~ /VirtualDisk/ && $1 !~ /^zd/ && $1 !~ /lvm/ {print $1}')
 
-for drive in $drives
-do
-  # Run smartctl command and capture the output
-  output=$(smartctl -H $drive 2>&1)
-  
-  if echo "$output" | grep -q "No such device"; then
-    continue
-  fi
+for dev in $drives; do
+    path="/dev/$dev"
+    health="UNKNOWN"
+    age=" "
+    wear=" "
+    port="?"
 
-  if echo "$output" | grep -qi -e passed -e "SMART Health Status: OK"; then
-    echo "$drive  : GOOD"
-  elif echo "$output" | grep -qi failed; then
-    echo "$drive  : $(tput setaf 1)REPLACE$(tput sgr 0)"
-  else
-    echo "$drive  : UNKNOWN STATUS"
-  fi
+    # Health check
+    output=$(smartctl -H "$path" 2>&1)
+    if echo "$output" | grep -qi "SMART overall-health.*PASSED"; then
+        health="GOOD"
+    elif echo "$output" | grep -qi "SMART overall-health.*FAILED"; then
+        health="REPLACE"
+    fi
 
+    # Get port from by-path symlink (skip irrelevant types)
+    bypath=$(ls -l /dev/disk/by-path 2>/dev/null | grep "$dev" | awk '{print $9}' | head -n1)
+    if [[ "$bypath" =~ ata-([0-9]+) ]]; then
+        port="SATA-${BASH_REMATCH[1]}"
+    elif [[ "$bypath" =~ usb.* ]]; then
+        port="USB-${bypath}"
+    elif [[ "$bypath" =~ pci.* ]]; then
+        port="PCI"
+    fi
+
+    # Get SMART attributes
+    smartctl_all=$(smartctl -A "$path" 2>/dev/null)
+
+    # Drive age
+    power_on_hours=$(echo "$smartctl_all" | awk '/Power_On_Hours|Power on Hours/ {print $NF}')
+    if [[ "$power_on_hours" =~ ^[0-9]+$ ]]; then
+        age=$(( power_on_hours / 24 ))
+    fi
+
+    # Wear level (best guess)
+    wear_val=$(echo "$smartctl_all" | awk '/Wear_Leveling_Count|Media_Wearout_Indicator|Percentage Used|SSD_Life_Left/ {print $(NF)}' | grep -o '[0-9]\+' | head -n1)
+    if [[ -n "$wear_val" && "$wear_val" -le 100 ]]; then
+        wear="${wear_val}%"
+    fi
+
+    printf "%-12s %-8s %-9s %-6s %-10s\n" "$path" "$health" "$age" "$wear" "$port"
 done
 
-## List the Details on the Drives Present
-echo "-------------------------------------------"
-echo Drive Details:
-lsblk --nodeps -o NAME,MODEL,SERIAL,WWN,TYPE,SIZE,SUBSYSTEMS |grep -v zd | grep -v VirtualDisk
-echo "-------------------------------------------"
-## Get Drives Previous method
-# drives=$(lsblk | grep disk | grep -v zd | awk '{print "/dev/" $1}')
+printf -- "-------------------------------------------\n"
+printf "Drive Details:\n"
+printf "%-8s %-25s %-15s %-6s %-7s %-10s\n" "NAME" "MODEL" "SERIAL" "TYPE" "SIZE" "PORT"
 
-### This is another method but it is causing a bug on usb enclosures that don't have the drives present
-# Get the list of drives (skipping zfs, lvm, dvd and usb drives)
-# drives=$( ls -la /dev/disk/by-id/  | grep -v part | grep -v lvm | grep -v dm | grep -v sr | awk '{print "/dev/disk/by-id/" $11}' | grep by-id/.. | sort | uniq | sed 's/\/disk\/by-id\/..\/..//g' )
+for dev in $drives; do
+    path="/dev/$dev"
+    model=$(lsblk -ndo MODEL "$path")
+    serial=$(lsblk -ndo SERIAL "$path")
+    type=$(lsblk -ndo TYPE "$path")
+    size=$(lsblk -ndo SIZE "$path")
+
+    # Get port info again for detail line
+    bypath=$(ls -l /dev/disk/by-path 2>/dev/null | grep "$dev" | awk '{print $9}' | head -n1)
+    if [[ "$bypath" =~ ata-([0-9]+) ]]; then
+        port="sata ${BASH_REMATCH[1]}"
+    elif [[ "$bypath" =~ usb.* ]]; then
+        port="USB-${bypath}"
+    elif [[ "$bypath" =~ pci.* ]]; then
+        port="pci"
+    else
+        port="?"
+    fi
+
+    printf "%-8s %-25s %-15s %-6s %-7s %-10s\n" "$dev" "$model" "$serial" "$type" "$size" "$port"
+done
+
+printf -- "-------------------------------------------\n"
 
