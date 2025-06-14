@@ -57,7 +57,6 @@ for dev in $drives; do
 
     printf "%-12s %-8s %-9s %-6s %-10s\n" "$path" "$health" "$age" "$wear" "$port"
 done
-
 printf -- "-------------------------------------------\n"
 printf "Drive Details:\n"
 printf "%-8s %-25s %-15s %-6s %-7s %-10s\n" "NAME" "MODEL" "SERIAL" "TYPE" "SIZE" "PORT"
@@ -66,10 +65,21 @@ for dev in $drives; do
     path="/dev/$dev"
     model=$(lsblk -ndo MODEL "$path")
     serial=$(lsblk -ndo SERIAL "$path")
-    type=$(lsblk -ndo TYPE "$path")
     size=$(lsblk -ndo SIZE "$path")
 
-    # Get port info again for detail line
+    # Detect real type: HD, SSD, NVME
+    if [[ "$dev" == nvme* ]]; then
+        dtype="NVME"
+    else
+        rotation=$(smartctl -i "$path" 2>/dev/null | awk -F: '/Rotation Rate/ {gsub(/^[ \t]+/, "", $2); print $2}')
+        if [[ "$rotation" =~ ^0|Solid.State.Device$ ]]; then
+            dtype="SSD"
+        else
+            dtype="HD"
+        fi
+    fi
+
+    # Get port info again
     bypath=$(ls -l /dev/disk/by-path 2>/dev/null | grep "$dev" | awk '{print $9}' | head -n1)
     if [[ "$bypath" =~ ata-([0-9]+) ]]; then
         port="sata ${BASH_REMATCH[1]}"
@@ -81,7 +91,7 @@ for dev in $drives; do
         port="?"
     fi
 
-    printf "%-8s %-25s %-15s %-6s %-7s %-10s\n" "$dev" "$model" "$serial" "$type" "$size" "$port"
+    printf "%-8s %-25s %-15s %-6s %-7s %-10s\n" "$dev" "$model" "$serial" "$dtype" "$size" "$port"
 done
 
 printf -- "-------------------------------------------\n"
