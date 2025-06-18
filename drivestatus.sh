@@ -2,6 +2,7 @@
 ## Inspired from:  https://www.youtube.com/watch?v=1YGt5o35mo0
 ## 20250614 _ added age, wear level and port numbers
 ## 20250617 _ fixed SAS detection and consistent grep patterns
+## 20250618 _ fixed Samsung SSD wear level detection
 
 # Must run as root
 if [[ $(id -u) -ne 0 ]]; then
@@ -31,7 +32,7 @@ for dev in $drives; do
         health="REPLACE"
     fi
 
-    # Get port from by-path symlink (skip irrelevant types)
+    # Get port from by-path symlink
     bypath=$(ls -l /dev/disk/by-path 2>/dev/null | grep "$dev" | awk '{print $9}' | head -n1)
     if [[ "$bypath" =~ ata-([0-9]+) ]]; then
         port="SATA-${BASH_REMATCH[1]}"
@@ -52,11 +53,22 @@ for dev in $drives; do
         age=$(( power_on_hours / 24 ))
     fi
 
-    # Wear level (best guess)
-    wear_val=$(echo "$smartctl_all" | awk '/Wear_Leveling_Count|Media_Wearout_Indicator|Percentage Used|SSD_Life_Left/ {print $(NF)}' | grep -o '[0-9]\+' | head -n1)
-    if [[ -n "$wear_val" && "$wear_val" -le 100 ]]; then
-        wear="${wear_val}%"
+    # Wear level detection
+    if echo "$smartctl_all" | grep -q 'Wear_Leveling_Count'; then
+        raw_val=$(echo "$smartctl_all" | awk '/Wear_Leveling_Count/ {print $4}')
+        if [[ "$raw_val" =~ ^[0-9]+$ ]]; then
+            raw_val=$((10#$raw_val))  # Strip leading zeros (force base 10)
+            if [[ "$raw_val" -le 100 ]]; then
+                wear="$((100 - raw_val))%"
+            fi
+        fi
+    else
+        alt_val=$(echo "$smartctl_all" | awk '/Media_Wearout_Indicator|Percentage Used|SSD_Life_Left/ {for(i=1;i<=NF;i++) if ($i ~ /^[0-9]+%?$/) print $i}' | grep -o '[0-9]\+' | head -n1)
+        if [[ "$alt_val" =~ ^[0-9]+$ && "$alt_val" -le 100 ]]; then
+            wear="${alt_val}%"
+        fi
     fi
+
 
     printf "%-12s %-8s %-9s %-6s %-10s\n" "$path" "$health" "$age" "$wear" "$port"
 done
