@@ -74,7 +74,7 @@ done
 
 printf -- "-------------------------------------------\n"
 printf "Drive Details:\n"
-printf "%-8s %-6s %-7s %-30s %-18s %-30s\n" "NAME" "TYPE" "SIZE" "MODEL" "SERIAL" "PORT"
+printf "%-8s %-6s %-7s %-30s %-18s %-25s\n" "NAME" "TYPE" "SIZE" "MODEL" "SERIAL" "PORT"
 
 for dev in $drives; do
     path="/dev/$dev"
@@ -97,7 +97,7 @@ for dev in $drives; do
     # Port detection using function
     port=$(get_port_label "$dev")
 
-    printf "%-8s %-6s %-7s %-30s %-18s %-30s\n" "$dev" "$dtype" "$size" "$model" "$serial" "$port"
+    printf "%-8s %-6s %-7s %-30s %-18s %-25s\n" "$dev" "$dtype" "$size" "$model" "$serial" "$port"
 done
 
 printf -- "-------------------------------------------\n"
