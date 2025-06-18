@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 ## Inspired from:  https://www.youtube.com/watch?v=1YGt5o35mo0
 ## 20250614 _ added age, wear level and port numbers
-## 20250617 _ fixed SAS detection and consistent grep patterns
+## 20250618 _ fixed drive detection to include SAS and SCSI
+
 
 # Must run as root
 if [[ $(id -u) -ne 0 ]]; then
@@ -9,19 +10,38 @@ if [[ $(id -u) -ne 0 ]]; then
     exit 1
 fi
 
+get_port_label() {
+    local dev=$1
+    local bypath
+    bypath=$(ls -l /dev/disk/by-path 2>/dev/null | grep "$dev" | awk '{print $9}' | head -n1)
+
+    if [[ "$bypath" =~ ata-([0-9]+) ]]; then
+        echo "SATA-${BASH_REMATCH[1]}"
+    elif [[ "$bypath" =~ sas-phy([0-9]+) ]]; then
+        echo "SAS-PHY${BASH_REMATCH[1]}"
+    elif [[ "$bypath" =~ usb.* ]]; then
+        echo "USB-${bypath}"
+    elif [[ "$bypath" =~ scsi-([0-9:]+) ]]; then
+        echo "SCSI-${BASH_REMATCH[1]}"
+    elif [[ "$bypath" =~ pci.* ]]; then
+        echo "PCI"
+    else
+        echo "?"
+    fi
+}
+
 printf -- "-------------------------------------------\n"
 printf "Drive Health:\n"
 printf "%-12s %-8s %-9s %-6s %-10s\n" "DEVICE" "STATUS" "AGE_DAYS" "WEAR" "PORT"
 
 # Get all real disks, skip zfs/lvm/virtual
-drives=$(lsblk -ndo NAME,TYPE,SIZE |grep -v zd |grep -v lvm |grep -v " 0B" |grep -i -v virtual | awk '{print $1}')
+drives=$(lsblk -ndo NAME,TYPE,SIZE | grep -v zd | grep -v lvm | grep -v " 0B" | grep -i -v virtual | awk '{print $1}')
 
 for dev in $drives; do
     path="/dev/$dev"
     health="UNKNOWN"
     age=" "
     wear=" "
-    port="?"
 
     # Health check
     output=$(smartctl -H "$path" 2>&1)
@@ -31,21 +51,8 @@ for dev in $drives; do
         health="REPLACE"
     fi
 
-    # Get port from by-path symlink (skip irrelevant types)
-    bypath=$(ls -l /dev/disk/by-path 2>/dev/null | grep "$dev" | awk '{print $9}' | head -n1)
-    if [[ "$bypath" =~ ata-([0-9]+) ]]; then
-        port="SATA-${BASH_REMATCH[1]}"
-    elif [[ "$bypath" =~ sas-phy([0-9]+) ]]; then
-        port="SAS-PHY${BASH_REMATCH[1]}"
-    elif [[ "$bypath" =~ usb.* ]]; then
-        port="USB-${bypath}"
-    elif [[ "$bypath" =~ scsi-([0-9:]+) ]]; then
-        port="SCSI-${BASH_REMATCH[1]}"
-    elif [[ "$bypath" =~ pci.* ]]; then
-        port="PCI"
-    else
-        port="?"
-    fi
+    # Port detection using function
+    port=$(get_port_label "$dev")
 
     # Get SMART attributes
     smartctl_all=$(smartctl -A "$path" 2>/dev/null)
@@ -87,21 +94,8 @@ for dev in $drives; do
         fi
     fi
 
-    # Get port info again
-        bypath=$(ls -l /dev/disk/by-path 2>/dev/null | grep "$dev" | awk '{print $9}' | head -n1)
-    if [[ "$bypath" =~ ata-([0-9]+) ]]; then
-        port="SATA-${BASH_REMATCH[1]}"
-    elif [[ "$bypath" =~ sas-phy([0-9]+) ]]; then
-        port="SAS-PHY${BASH_REMATCH[1]}"
-    elif [[ "$bypath" =~ usb.* ]]; then
-        port="USB-${bypath}"
-    elif [[ "$bypath" =~ scsi-([0-9:]+) ]]; then
-        port="SCSI-${BASH_REMATCH[1]}"
-    elif [[ "$bypath" =~ pci.* ]]; then
-        port="PCI"
-    else
-        port="?"
-    fi
+    # Port detection using function
+    port=$(get_port_label "$dev")
 
     printf "%-8s %-25s %-15s %-6s %-7s %-10s\n" "$dev" "$model" "$serial" "$dtype" "$size" "$port"
 done
