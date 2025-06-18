@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 ## Inspired from:  https://www.youtube.com/watch?v=1YGt5o35mo0
 ## 20250614 _ added age, wear level and port numbers
+## 20250617 _ fixed SAS detection and consistent grep patterns
 
 # Must run as root
 if [[ $(id -u) -ne 0 ]]; then
@@ -13,7 +14,7 @@ printf "Drive Health:\n"
 printf "%-12s %-8s %-9s %-6s %-10s\n" "DEVICE" "STATUS" "AGE_DAYS" "WEAR" "PORT"
 
 # Get all real disks, skip zfs/lvm/virtual
-drives=$(lsblk -ndo NAME,TYPE,MODEL | awk '$2=="disk" && $3 !~ /VirtualDisk/ && $1 !~ /^zd/ && $1 !~ /lvm/ {print $1}')
+drives=$(lsblk -ndo NAME,TYPE,SIZE |grep -v zd |grep -v lvm |grep -v " 0B" |grep -i -v virtual | awk '{print $1}')
 
 for dev in $drives; do
     path="/dev/$dev"
@@ -34,10 +35,16 @@ for dev in $drives; do
     bypath=$(ls -l /dev/disk/by-path 2>/dev/null | grep "$dev" | awk '{print $9}' | head -n1)
     if [[ "$bypath" =~ ata-([0-9]+) ]]; then
         port="SATA-${BASH_REMATCH[1]}"
+    elif [[ "$bypath" =~ sas-phy([0-9]+) ]]; then
+        port="SAS-PHY${BASH_REMATCH[1]}"
     elif [[ "$bypath" =~ usb.* ]]; then
         port="USB-${bypath}"
+    elif [[ "$bypath" =~ scsi-([0-9:]+) ]]; then
+        port="SCSI-${BASH_REMATCH[1]}"
     elif [[ "$bypath" =~ pci.* ]]; then
         port="PCI"
+    else
+        port="?"
     fi
 
     # Get SMART attributes
@@ -57,6 +64,7 @@ for dev in $drives; do
 
     printf "%-12s %-8s %-9s %-6s %-10s\n" "$path" "$health" "$age" "$wear" "$port"
 done
+
 printf -- "-------------------------------------------\n"
 printf "Drive Details:\n"
 printf "%-8s %-25s %-15s %-6s %-7s %-10s\n" "NAME" "MODEL" "SERIAL" "TYPE" "SIZE" "PORT"
@@ -80,13 +88,17 @@ for dev in $drives; do
     fi
 
     # Get port info again
-    bypath=$(ls -l /dev/disk/by-path 2>/dev/null | grep "$dev" | awk '{print $9}' | head -n1)
+        bypath=$(ls -l /dev/disk/by-path 2>/dev/null | grep "$dev" | awk '{print $9}' | head -n1)
     if [[ "$bypath" =~ ata-([0-9]+) ]]; then
-        port="sata ${BASH_REMATCH[1]}"
+        port="SATA-${BASH_REMATCH[1]}"
+    elif [[ "$bypath" =~ sas-phy([0-9]+) ]]; then
+        port="SAS-PHY${BASH_REMATCH[1]}"
     elif [[ "$bypath" =~ usb.* ]]; then
         port="USB-${bypath}"
+    elif [[ "$bypath" =~ scsi-([0-9:]+) ]]; then
+        port="SCSI-${BASH_REMATCH[1]}"
     elif [[ "$bypath" =~ pci.* ]]; then
-        port="pci"
+        port="PCI"
     else
         port="?"
     fi
@@ -95,4 +107,3 @@ for dev in $drives; do
 done
 
 printf -- "-------------------------------------------\n"
-
