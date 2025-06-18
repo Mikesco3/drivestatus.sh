@@ -46,9 +46,8 @@ The script will check the health status of all drives and print their status and
 ## Script Details
 The script performs the following steps:
 
-1. Iterates over all possible drive letters from a to z.
-2. Checks if the drive exists.
-3. If the drive exists, it checks the health status using the smartctl command.
+1. Detects the physical drives in the system
+3. Checks the health status using the smartctl command.
 4. Prints the drive status:
   - **GOOD:** If the status is PASSED or SMART Health Status: OK.
   - **REPLACE:** If the status is FAILED.
@@ -58,17 +57,21 @@ The script performs the following steps:
 ```
 -------------------------------------------
 Drive Health:
-/dev/sda  : GOOD
-/dev/sdb  : GOOD
-/dev/nvme0n1  : GOOD
+DEVICE       STATUS   AGE_DAYS  WEAR   PORT                          
+/dev/sda     GOOD      2195             SATA-1                        
+/dev/sdb     GOOD      2195             SATA-2                        
+/dev/sdc     GOOD      315       1%     SATA-3                        
 -------------------------------------------
 Drive Details:
-NAME    MODEL     SERIAL           TYPE    SIZE   SUBSYSTEMS
-sda     ACME      000000000001     disk   10.9T   block:scsi:usb:pci
-sdb     HGST      5999AA           disk   10.9T   block:scsi:usb:pci
-nvme0n1 Samsung   AABBCC00112233   disk    1.8T   block:nvme:pci
+NAME     TYPE   SIZE    MODEL                    SERIAL    PORT                     
+sda      HD      3.6T   ACME BlahBlahBlah        SN00001   SATA-1                   
+sdb      HD      3.6T   HGST BlahBlahBlah        SN00002   SATA-2                   
+sdc      SSD    931.5G  Samsung BlahBlahBlah     SN00003   SATA-3                   
 -------------------------------------------
 ```
+
+## Roadmap
+- have it warn based on the wearlevel and age
 
 ## License
 <a href="https://github.com/Mikesco3/drivestatus.sh/blob/main/LICENSE" target="_blank">AGPL-3.0 license</a>.
