@@ -63,12 +63,22 @@ for dev in $drives; do
         age=$(( power_on_hours / 24 ))
     fi
 
-    # Wear level (best guess)
-    wear_val=$(echo "$smartctl_all" | awk '/Wear_Leveling_Count|Media_Wearout_Indicator|Percentage Used|SSD_Life_Left/ {print $(NF)}' | grep -o '[0-9]\+' | head -n1)
-    if [[ -n "$wear_val" && "$wear_val" -le 100 ]]; then
-        wear="${wear_val}%"
+    # Wear level detection
+    if echo "$smartctl_all" | grep -q 'Wear_Leveling_Count'; then
+        raw_val=$(echo "$smartctl_all" | awk '/Wear_Leveling_Count/ {print $4}')
+        if [[ "$raw_val" =~ ^[0-9]+$ ]]; then
+            raw_val=$((10#$raw_val))  # Strip leading zeros (force base 10)
+            if [[ "$raw_val" -le 100 ]]; then
+                wear="$((100 - raw_val))%"
+            fi
+        fi
+    else
+        alt_val=$(echo "$smartctl_all" | awk '/Media_Wearout_Indicator|Percentage Used|SSD_Life_Left/ {for(i=1;i<=NF;i++) if ($i ~ /^[0-9]+%?$/) print $i}' | grep -o '[0-9]\+' | head -n1)
+        if [[ "$alt_val" =~ ^[0-9]+$ && "$alt_val" -le 100 ]]; then
+            wear="${alt_val}%"
+        fi
     fi
-
+    
     printf "%-12s %-8s  %-9s %-6s %-30s\n"        "$path" "$health" "$age" "$wear" "$port"
 done
 
