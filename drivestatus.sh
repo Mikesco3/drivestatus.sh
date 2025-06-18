@@ -15,7 +15,8 @@ printf "Drive Health:\n"
 printf "%-12s %-8s %-9s %-6s %-10s\n" "DEVICE" "STATUS" "AGE_DAYS" "WEAR" "PORT"
 
 # Get all real disks, skip zfs/lvm/virtual
-drives=$(lsblk -ndo NAME,TYPE,MODEL | awk '$2=="disk" && $3 !~ /VirtualDisk/ && $1 !~ /^zd/ && $1 !~ /lvm/ {print $1}')
+drives=$(lsblk -ndo NAME,TYPE,MODEL,SIZE | awk '$2=="disk" && $3 !~ /VirtualDisk/ && $1 !~ /^zd/ && $1 !~ /lvm/ && $4 != "0B" {print $1}')
+
 
 for dev in $drives; do
     path="/dev/$dev"
