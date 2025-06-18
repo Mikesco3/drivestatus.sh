@@ -3,7 +3,7 @@
 ## 20250614 _ added age, wear level and port numbers
 ## 20250617 _ fixed SAS detection and consistent grep patterns
 ## 20250618 _ fixed Samsung SSD wear level detection
-## 20250618b _ skips phantom 0-byte drives (e.g. empty USB card readers)
+## 20250618 _ skip empty USB card reader slots
 
 # Must run as root
 if [[ $(id -u) -ne 0 ]]; then
