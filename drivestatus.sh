@@ -3,6 +3,7 @@
 ## 20250614 _ added age, wear level and port numbers
 ## 20250617 _ fixed SAS detection and consistent grep patterns
 ## 20250618 _ fixed Samsung SSD wear level detection
+## 20250618 _ skip empty USB card reader slots
 
 # Must run as root
 if [[ $(id -u) -ne 0 ]]; then
@@ -68,7 +69,6 @@ for dev in $drives; do
             wear="${alt_val}%"
         fi
     fi
-
 
     printf "%-12s %-8s %-9s %-6s %-10s\n" "$path" "$health" "$age" "$wear" "$port"
 done
