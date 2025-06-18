@@ -32,10 +32,10 @@ get_port_label() {
 
 printf -- "-------------------------------------------\n"
 printf "Drive Health:\n"
-printf "%-12s %-8s %-9s %-6s %-10s\n" "DEVICE" "STATUS" "AGE_DAYS" "WEAR" "PORT"
+printf "%-12s %-8s %-9s %-6s %-30s\n" "DEVICE" "STATUS" "AGE_DAYS" "WEAR" "PORT"
 
 # Get all real disks, skip zfs/lvm/virtual
-drives=$(lsblk -ndo NAME,TYPE,SIZE | grep -v zd | grep -v lvm | grep -v " 0B" | grep -i -v virtual | awk '{print $1}')
+drives=$(lsblk -ndo NAME,TYPE,SIZE | grep -v zd | grep -v lvm | grep -v " 0B" | grep -i -v virtual |grep -v "sr" | awk '{print $1}')
 
 for dev in $drives; do
     path="/dev/$dev"
@@ -69,12 +69,12 @@ for dev in $drives; do
         wear="${wear_val}%"
     fi
 
-    printf "%-12s %-8s %-9s %-6s %-10s\n" "$path" "$health" "$age" "$wear" "$port"
+    printf "%-12s %-8s  %-9s %-6s %-30s\n"        "$path" "$health" "$age" "$wear" "$port"
 done
 
 printf -- "-------------------------------------------\n"
 printf "Drive Details:\n"
-printf "%-8s %-25s %-15s %-6s %-7s %-10s\n" "NAME" "MODEL" "SERIAL" "TYPE" "SIZE" "PORT"
+printf "%-8s %-6s %-7s %-30s %-18s %-30s\n" "NAME" "TYPE" "SIZE" "MODEL" "SERIAL" "PORT"
 
 for dev in $drives; do
     path="/dev/$dev"
@@ -97,7 +97,7 @@ for dev in $drives; do
     # Port detection using function
     port=$(get_port_label "$dev")
 
-    printf "%-8s %-25s %-15s %-6s %-7s %-10s\n" "$dev" "$model" "$serial" "$dtype" "$size" "$port"
+    printf "%-8s %-6s %-7s %-30s %-18s %-30s\n" "$dev" "$dtype" "$size" "$model" "$serial" "$port"
 done
 
 printf -- "-------------------------------------------\n"
