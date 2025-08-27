@@ -32,7 +32,7 @@ get_port_label() {
 
 printf -- "-------------------------------------------\n"
 printf "Drive Health:\n"
-printf "%-12s %-8s %-9s %-6s %-30s\n" "DEVICE" "STATUS" "AGE_DAYS" "WEAR" "PORT"
+printf "%-12s %-6s %-8s %-9s %-6s %-30s\n" "DEVICE" "TYPE" "STATUS" "AGE_DAYS" "WEAR" "PORT"
 
 # Get all real disks, skip zfs/lvm/virtual
 drives=$(lsblk -ndo NAME,TYPE,SIZE | grep -v zd | grep -v lvm | grep -v " 0B" | grep -i -v virtual |grep -v "sr" | awk '{print $1}')
@@ -64,7 +64,11 @@ for dev in $drives; do
     fi
 
     # Wear level detection
-    if echo "$smartctl_all" | grep -q 'Wear_Leveling_Count'; then
+    # First, check for standardized "Percentage Used" attribute which is most reliable
+    percent_used_val=$(echo "$smartctl_all" | awk '/^Percentage Used:/ {print $3} /Percentage_Used/ {print $NF}' | head -n1 | tr -d '%')
+    if [[ "$percent_used_val" =~ ^[0-9]+$ && "$percent_used_val" -le 100 ]]; then
+        wear="${percent_used_val}%"
+    elif echo "$smartctl_all" | grep -q 'Wear_Leveling_Count'; then
         raw_val=$(echo "$smartctl_all" | awk '/Wear_Leveling_Count/ {print $4}')
         if [[ "$raw_val" =~ ^[0-9]+$ ]]; then
             raw_val=$((10#$raw_val))  # Strip leading zeros (force base 10)
@@ -72,14 +76,35 @@ for dev in $drives; do
                 wear="$((100 - raw_val))%"
             fi
         fi
+    elif echo "$smartctl_all" | grep -q 'Avg_Write/Erase_Count'; then
+        avg_pe=$(echo "$smartctl_all" | awk '/Avg_Write\/Erase_Count/ {print $NF}')
+        if [[ "$avg_pe" =~ ^[0-9]+$ ]]; then
+            # Default endurance assumption for TLC NAND (~1000 P/E cycles)
+            ENDURANCE_CYCLES=1000
+            wear_used=$(awk -v pe="$avg_pe" -v limit="$ENDURANCE_CYCLES" 'BEGIN {printf "%.0f", (pe/limit)*100}')
+            wear="${wear_used}%"
+        fi
     else
-        alt_val=$(echo "$smartctl_all" | awk '/Media_Wearout_Indicator|Percentage Used|SSD_Life_Left/ {for(i=1;i<=NF;i++) if ($i ~ /^[0-9]+%?$/) print $i}' | grep -o '[0-9]\+' | head -n1)
+        # Fallback for other less common attributes
+        alt_val=$(echo "$smartctl_all" | awk '/Media_Wearout_Indicator|SSD_Life_Left/ {for(i=1;i<=NF;i++) if ($i ~ /^[0-9]+%?$/) print $i}' | grep -o '[0-9]\+' | head -n1)
         if [[ "$alt_val" =~ ^[0-9]+$ && "$alt_val" -le 100 ]]; then
             wear="${alt_val}%"
         fi
     fi
     
-    printf "%-12s %-8s  %-9s %-6s %-30s\n"        "$path" "$health" "$age" "$wear" "$port"
+    # Detect real type: HD, SSD, NVME
+    if [[ "$dev" == nvme* ]]; then
+        dtype="NVME"
+    else
+        rotation=$(smartctl -i "$path" 2>/dev/null | awk -F: '/Rotation Rate/ {gsub(/^[ \t]+/, "", $2); print $2}')
+        if [[ "$rotation" =~ ^0|Solid.State.Device$ ]]; then
+            dtype="SSD"
+        else
+            dtype="HD"
+        fi
+    fi
+
+    printf "%-12s %-6s %-8s  %-9s %-6s %-30s\n" "$path" "$dtype" "$health" "$age" "$wear" "$port"
 done
 
 printf -- "-------------------------------------------\n"
