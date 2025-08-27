@@ -3,6 +3,8 @@
 # Hard Drive Health Check Script
 This script checks the health status of hard drives connected to your system using the `smartctl` utility from the `smartmontools` package.
 
+> **This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.**
+
 ## Requirements
 - `smartmontools` package installed on your system for the `smartctl` command.
 - `util-linux` package installed on your system for the `lsblk` command.
@@ -57,10 +59,10 @@ The script performs the following steps:
 ```
 -------------------------------------------
 Drive Health:
-DEVICE       STATUS   AGE_DAYS  WEAR   PORT                          
-/dev/sda     GOOD      2195             SATA-1                        
-/dev/sdb     GOOD      2195             SATA-2                        
-/dev/sdc     GOOD      315       1%     SATA-3                        
+DEVICE    TYPE  STATUS   AGE_DAYS  WEAR   PORT                          
+/dev/sda  HD    GOOD      2195             SATA-1                        
+/dev/sdb  HD    GOOD      2195             SATA-2                        
+/dev/sdc  SSD   GOOD      315       1%     SATA-3                        
 -------------------------------------------
 Drive Details:
 NAME     TYPE   SIZE    MODEL                    SERIAL    PORT                     
@@ -70,12 +72,45 @@ sdc      SSD    931.5G  Samsung BlahBlahBlah     SN00003   SATA-3
 -------------------------------------------
 ```
 
+## SSD Health Script (`ssd_health.sh`)
+This repository also includes `ssd_health.sh`, a script that provides a detailed health and wear report for SSDs.
+
+### Quick Install
+``` sh
+sudo wget -O /usr/bin/ssd_health https://raw.githubusercontent.com/Mikesco3/drivestatus.sh/main/ssd_health.sh && sudo chmod +x /usr/bin/ssd_health
+```
+
+### Sample Output
+```
+==============================================
+        SSD Health Report - /dev/sda
+==============================================
+Power-On Hours       : 11581 hours (~482 days)
+Host Writes          : 21072 GiB (~20.58 TB)
+NAND Writes          : 12676 GiB
+Average P/E Cycles   : 6
+Max P/E Cycles       : 21
+Spare Blocks Left    : 100%
+----------------------------------------------
+Estimated Wear Used  : 0.60 % (Using average P/E cycles)
+Estimated Life Left  : 99.40 %
+==============================================
+✅ Drive health is excellent.
+
+```
+
+### Usage
+``` sh
+ssd_health [device]
+# Example: ssd_health /dev/nvme0n1
+```
+
 ## Roadmap
 - have it warn based on the wearlevel and age
 
 ## License
-<a href="https://github.com/Mikesco3/drivestatus.sh/blob/main/LICENSE" target="_blank">AGPL-3.0 license</a>.
+[AGPL-3.0 license](https://github.com/Mikesco3/drivestatus.sh/blob/main/LICENSE).
 
 # Acknowledgments
-- <a href="https://www.youtube.com/@itssimplycomputing1814" target="_blank">@itssimplycomputing1814 on Youtube</a>
+- [@itssimplycomputing1814 on Youtube](https://www.youtube.com/@itssimplycomputing1814)
 - smartmontools - For providing the smartctl utility.
