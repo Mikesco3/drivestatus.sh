@@ -72,7 +72,8 @@ sdc      SSD    931.5G  Samsung BlahBlahBlah     SN00003   SATA-3
 -------------------------------------------
 ```
 
-## SSD Health Script (`ssd_health.sh`)
+___
+# SSD Health Script (`ssd_health.sh`)
 This repository also includes `ssd_health.sh`, a script that provides a detailed health and wear report for SSDs.
 
 ### Quick Install
