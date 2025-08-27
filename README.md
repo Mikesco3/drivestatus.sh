@@ -1,11 +1,11 @@
-# drivestatus
+# `drivestatus`
 
-# Hard Drive Health Check Script
+## Hard Drive Health Check Script
 This script checks the health status of hard drives connected to your system using the `smartctl` utility from the `smartmontools` package.
 
 > **This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.**
 
-## Requirements
+### Requirements
 - `smartmontools` package installed on your system for the `smartctl` command.
 - `util-linux` package installed on your system for the `lsblk` command.
 
@@ -17,12 +17,12 @@ Consult your package manager to install these on your system. For example, on De
 
 ## Installation
 
-## short method
+### short method
 Run the following with root privileges command to download the script
 ``` sh
 sudo wget -O /usr/bin/drivestatus https://raw.githubusercontent.com/Mikesco3/drivestatus.sh/main/drivestatus.sh && sudo chmod +x /usr/bin/drivestatus
 ```
-## longer method
+### longer method
 1. Clone this repository:
   ``` sh
    git clone https://github.com/Mikesco3/drivestatus.sh.git
@@ -38,14 +38,14 @@ sudo wget -O /usr/bin/drivestatus https://raw.githubusercontent.com/Mikesco3/dri
    cp drivestatus.sh /usr/bin/drivestatus
   ```
 
-# Usage
+## Usage
 Run the script using the following command:
   ``` sh
    drivestatus 
   ```
 The script will check the health status of all drives and print their status and details.
 
-## Script Details
+### Script Details
 The script performs the following steps:
 
 1. Detects the physical drives in the system
@@ -55,7 +55,7 @@ The script performs the following steps:
   - **REPLACE:** If the status is FAILED.
   - **UNKNOWN STATUS:** If the status is neither PASSED nor FAILED.
 
-## Example Output
+### Example Output
 ```
 -------------------------------------------
 Drive Health:
@@ -73,13 +73,20 @@ sdc      SSD    931.5G  Samsung BlahBlahBlah     SN00003   SATA-3
 ```
 
 ___
-# SSD Health Script (`ssd_health.sh`)
+# `ssd_health`
+## SSD Health Script 
 This repository also includes `ssd_health.sh`, a script that provides a detailed health and wear report for SSDs.
 
 ### Quick Install
 ``` sh
 sudo wget -O /usr/bin/ssd_health https://raw.githubusercontent.com/Mikesco3/drivestatus.sh/main/ssd_health.sh && sudo chmod +x /usr/bin/ssd_health
 ```
+### Usage
+``` sh
+ssd_health [device]
+# Example: ssd_health /dev/nvme0n1
+```
+> _it will default to `/dev/sda` if nothing provided_
 
 ### Sample Output
 ```
@@ -100,11 +107,6 @@ Estimated Life Left  : 99.40 %
 
 ```
 
-### Usage
-``` sh
-ssd_health [device]
-# Example: ssd_health /dev/nvme0n1
-```
 ___
 ## License
 [AGPL-3.0 license](https://github.com/Mikesco3/drivestatus.sh/blob/main/LICENSE).
@@ -112,3 +114,4 @@ ___
 # Acknowledgments
 - [@itssimplycomputing1814 on Youtube](https://www.youtube.com/@itssimplycomputing1814)
 - smartmontools - For providing the smartctl utility.
+- Cursor AI - with gemini-2.5-pro
