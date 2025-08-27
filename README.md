@@ -104,10 +104,7 @@ Estimated Life Left  : 99.40 %
 ssd_health [device]
 # Example: ssd_health /dev/nvme0n1
 ```
-
-## Roadmap
-- have it warn based on the wearlevel and age
-
+___
 ## License
 [AGPL-3.0 license](https://github.com/Mikesco3/drivestatus.sh/blob/main/LICENSE).
 
