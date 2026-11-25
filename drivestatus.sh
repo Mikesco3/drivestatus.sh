@@ -3,6 +3,8 @@
 ## 20250614 _ added age, wear level and port numbers
 ## 20250618 _ fixed drive detection to include SAS and SCSI
 
+#!/usr/bin/env bash
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
 
 # Must run as root
 if [[ $(id -u) -ne 0 ]]; then
